@@ -5,9 +5,12 @@ import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.TermVectorsReader;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.FSDirectory;
@@ -38,16 +41,24 @@ public class Search {
         //PhraseQuery q = new PhraseQuery("text", "Marmeladov");
         QueryParser qp = new QueryParser("text", analyzer);
         //Query q = qp.parse("φραγκογιαννού");
-        Query q = qp.parse("killed");
+        Query qq = qp.parse("text:killed");
+
+        BooleanQuery.Builder bqb = new BooleanQuery.Builder();
+        bqb.add(qq, BooleanClause.Occur.MUST);
+        WildcardQuery wq = new WildcardQuery(new Term("accessed", "2023022*"));
+        //bqb.add(LongPoint.newRangeQuery("size", 262016-10, 262016+20), BooleanClause.Occur.FILTER);
+        bqb.add(wq, BooleanClause.Occur.FILTER);
+
+        BooleanQuery q = bqb.build();
 
         TopDocs hits = indexSearcher.search(q, 10);
         //ScoreDoc[] hits = docs.scoreDocs;
         System.out.println("Found " + hits.scoreDocs.length + " hits.");
 
-        SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
+        SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("**", "**");
         QueryScorer queryScorer = new QueryScorer(q);
         Highlighter highlighter = new Highlighter(htmlFormatter, queryScorer);
-        highlighter.setTextFragmenter(new SimpleSpanFragmenter(queryScorer, 32));
+        highlighter.setTextFragmenter(new SimpleSpanFragmenter(queryScorer, 64));
         highlighter.setMaxDocCharsToAnalyze(Integer.MAX_VALUE);
         for (ScoreDoc hit : hits.scoreDocs) {
             int id = hit.doc;
@@ -67,8 +78,9 @@ public class Search {
             String[] frag = highlighter.getBestFragments(analyzer.tokenStream("text", text), text,  5);
             for (int j = 0; j < frag.length; j++) {
                 //if ((frag[j] != null) && (frag[j].getScore() > 0)) {
-
-                    System.out.println("---" + (j+1) + ":" + frag[j]);
+                    String f = frag[j];
+                    f = f.replace("\n", " ").replace("\r", "");
+                    System.out.println("---" + (j+1) + ":" + f);
                 //}
             }
 
