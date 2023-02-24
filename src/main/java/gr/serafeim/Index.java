@@ -1,5 +1,6 @@
 package gr.serafeim;
 
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -17,7 +18,8 @@ public class Index {
     public static void main(String[] args) throws IOException {
         String directory = "books";
         FSDirectory luceneIndex = FSDirectory.open(Paths.get("lucene_index"));
-        StandardAnalyzer analyzer = new StandardAnalyzer();
+        //StandardAnalyzer analyzer = new StandardAnalyzer();
+        EnglishAnalyzer analyzer = new EnglishAnalyzer();
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         IndexWriter indexWriter = new IndexWriter(luceneIndex, indexWriterConfig);
 
