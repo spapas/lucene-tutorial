@@ -15,8 +15,6 @@ import java.nio.file.attribute.FileTime;
 
 public class Index {
     public static void main(String[] args) throws IOException {
-
-        System.out.println("Hello world!");
         String directory = "books";
         FSDirectory luceneIndex = FSDirectory.open(Paths.get("lucene_index"));
         StandardAnalyzer analyzer = new StandardAnalyzer();
@@ -40,6 +38,7 @@ public class Index {
                     String accessTime = DateTools.timeToString(fileTime.toMillis(), DateTools.Resolution.MINUTE);
                     doc.add(new StringField("accessed", accessTime, Field.Store.YES ));
                     doc.add(new LongPoint("accessedPoint", fileTime.toMillis()));
+                    doc.add(new LongField("size", size));
 
                     Term idTerm = new Term("id", filename);
 
