@@ -39,6 +39,7 @@ public class Index {
                     doc.add(new StringField("accessed", accessTime, Field.Store.YES ));
                     doc.add(new LongPoint("accessedPoint", fileTime.toMillis()));
                     doc.add(new LongField("size", size));
+                    doc.add(new StoredField("size_s", size));
 
                     Term idTerm = new Term("id", filename);
 
