@@ -45,22 +45,27 @@ public class Search {
 
         BooleanQuery.Builder bqb = new BooleanQuery.Builder();
         bqb.add(qq, BooleanClause.Occur.MUST);
-        WildcardQuery wq = new WildcardQuery(new Term("accessed", "2023022*"));
+        //WildcardQuery wq = new WildcardQuery(new Term("accessed", "2023022*"));
         //bqb.add(LongPoint.newRangeQuery("size", 262016-10, 262016+20), BooleanClause.Occur.FILTER);
-        bqb.add(wq, BooleanClause.Occur.FILTER);
+        //bqb.add(wq, BooleanClause.Occur.FILTER);
 
         BooleanQuery q = bqb.build();
 
-        TopDocs hits = indexSearcher.search(q, 10);
+        //TopDocs hits = indexSearcher.search(q, 900);
         //ScoreDoc[] hits = docs.scoreDocs;
-        System.out.println("Found " + hits.scoreDocs.length + " hits.");
+        TopScoreDocCollector collector = TopScoreDocCollector.create(999 , 999 );
+        indexSearcher.search(q, collector);
+        System.out.println("Found " + collector.getTotalHits() + " hits.");
 
         SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("**", "**");
         QueryScorer queryScorer = new QueryScorer(q);
         Highlighter highlighter = new Highlighter(htmlFormatter, queryScorer);
         highlighter.setTextFragmenter(new SimpleSpanFragmenter(queryScorer, 64));
         highlighter.setMaxDocCharsToAnalyze(Integer.MAX_VALUE);
-        for (ScoreDoc hit : hits.scoreDocs) {
+        int pageNumber = 20;
+        int pageSize = 10;
+        TopDocs topDocs = collector.topDocs(pageNumber * pageSize, pageSize);
+        for (ScoreDoc hit : topDocs.scoreDocs) {
             int id = hit.doc;
             //System.out.println("XXX: " + hit +" "+ id);
             StoredFields storedFields = indexSearcher.storedFields();
